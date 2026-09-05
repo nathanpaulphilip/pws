@@ -35,16 +35,21 @@ const healthRouter = require('./routes/health');
 app.use('/api', healthRouter);
 app.use('/api/upload', uploadRouter);
 
-// --- Static frontend ---
-app.use(express.static(path.join(__dirname, '..', 'client'), {
-  index: 'index.html',
-  maxAge: config.isProduction ? '1h' : 0,
-}));
+// --- Static frontend (local dev only — Vercel serves from outputDirectory) ---
+const clientDir = path.join(__dirname, '..', 'client');
+const fs = require('fs');
+if (fs.existsSync(clientDir)) {
+  app.use(express.static(clientDir, {
+    index: 'index.html',
+    maxAge: config.isProduction ? '1h' : 0,
+  }));
 
-// --- SPA fallback ---
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'index.html'));
-});
+  // SPA fallback
+  const indexPath = path.join(clientDir, 'index.html');
+  app.get('*', (_req, res) => {
+    res.sendFile(indexPath);
+  });
+}
 
 // --- Error handler (must be last) ---
 app.use(errorHandler);
