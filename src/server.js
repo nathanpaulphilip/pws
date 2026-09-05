@@ -36,7 +36,7 @@ app.use('/api', healthRouter);
 app.use('/api/upload', uploadRouter);
 
 // --- Static frontend (local dev only — Vercel serves from outputDirectory) ---
-const clientDir = path.join(__dirname, '..', 'client');
+const clientDir = path.join(__dirname, '..', 'public');
 const fs = require('fs');
 if (fs.existsSync(clientDir)) {
   app.use(express.static(clientDir, {

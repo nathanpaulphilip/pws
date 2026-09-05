@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "outputDirectory": "client",
+  "outputDirectory": "public",
   "builds": [
     {
       "src": "api/index.js",
