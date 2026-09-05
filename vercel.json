@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "outputDirectory": "client",
   "builds": [
     {
       "src": "api/index.js",
@@ -8,17 +7,7 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/index.js"
-    },
-    {
-      "src": "/(.*\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/index.js"
-    }
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
