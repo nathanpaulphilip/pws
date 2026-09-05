@@ -19,8 +19,12 @@ const scheduledCleanups = new Map();
  * Ensure the upload directory exists.
  */
 function ensureUploadDir() {
-  if (!fs.existsSync(config.upload.dir)) {
-    fs.mkdirSync(config.upload.dir, { recursive: true });
+  try {
+    if (!fs.existsSync(config.upload.dir)) {
+      fs.mkdirSync(config.upload.dir, { recursive: true });
+    }
+  } catch {
+    // Vercel serverless: filesystem is read-only, skip directory creation
   }
 }
 

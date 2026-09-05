@@ -65,7 +65,6 @@ function validateUploadedFile(req, res, next) {
 
   // 1. Extension check
   if (!config.upload.allowedExtensions.includes(ext)) {
-    cleanupFile(file.path);
     return res.status(400).json({
       error: `File extension "${ext}" is not supported.`,
       allowed: config.upload.allowedExtensions,
@@ -75,7 +74,6 @@ function validateUploadedFile(req, res, next) {
   // 2. MIME type check (from multer / browser)
   const declaredMime = file.mimetype;
   if (!config.upload.allowedMimeTypes.includes(declaredMime)) {
-    cleanupFile(file.path);
     return res.status(400).json({
       error: `MIME type "${declaredMime}" is not supported.`,
       allowed: config.upload.allowedMimeTypes,
@@ -85,7 +83,6 @@ function validateUploadedFile(req, res, next) {
   // 3. Extension ↔ MIME consistency check
   const expectedMime = EXTENSION_MIME_MAP[ext];
   if (expectedMime && expectedMime !== declaredMime) {
-    cleanupFile(file.path);
     return res.status(400).json({
       error: 'File extension does not match declared MIME type.',
     });
@@ -93,19 +90,26 @@ function validateUploadedFile(req, res, next) {
 
   // 4. Magic-byte verification
   try {
-    const header = Buffer.alloc(12);
-    const fd = fs.openSync(file.path, 'r');
-    fs.readSync(fd, header, 0, 12, 0);
-    fs.closeSync(fd);
+    let header;
+    if (file.buffer) {
+      // Memory storage (serverless)
+      header = file.buffer.slice(0, 12);
+    } else if (file.path) {
+      // Disk storage (local dev)
+      header = Buffer.alloc(12);
+      const fd = fs.openSync(file.path, 'r');
+      fs.readSync(fd, header, 0, 12, 0);
+      fs.closeSync(fd);
+    } else {
+      return res.status(400).json({ error: 'Could not read file contents.' });
+    }
 
     if (!validateMagicBytes(header, declaredMime)) {
-      cleanupFile(file.path);
       return res.status(400).json({
         error: 'File content does not match its declared type (magic-byte check failed).',
       });
     }
   } catch {
-    cleanupFile(file.path);
     return res.status(500).json({ error: 'Could not verify file contents.' });
   }
 

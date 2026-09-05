@@ -21,17 +21,23 @@ const { scheduleCleanup, forceDelete, ensureUploadDir } = require('../utils/clea
 
 const router = express.Router();
 
-// Configure multer storage
-ensureUploadDir();
+// Detect serverless environment (Vercel, AWS Lambda, etc.)
+const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, config.upload.dir),
-  filename: (req, file, cb) => {
-    const id = uuidv4();
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${id}${ext}`);
-  },
-});
+// Configure multer — memory storage for serverless, disk for local
+const storage = isServerless
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (_req, _file, cb) => {
+        ensureUploadDir();
+        cb(null, config.upload.dir);
+      },
+      filename: (_req, file, cb) => {
+        const id = uuidv4();
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `${id}${ext}`);
+      },
+    });
 
 const upload = multer({
   storage,
@@ -40,7 +46,6 @@ const upload = multer({
     files: 1,
   },
   fileFilter: (_req, file, cb) => {
-    // Pre-filter by extension before multer saves
     const ext = path.extname(file.originalname).toLowerCase();
     if (!config.upload.allowedExtensions.includes(ext)) {
       return cb(null, false);
@@ -57,18 +62,34 @@ const upload = multer({
 router.post(
   '/',
   upload.single('media'),
-  validateUploadedFile,
   (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     const file = req.file;
+
+    if (isServerless) {
+      // In serverless: return file info only (no disk storage)
+      // The browser should use the local file picker or URL instead
+      return res.json({
+        fileId: 'serverless-' + uuidv4(),
+        filename: sanitizeFilename(file.originalname),
+        originalName: sanitizeFilename(file.originalname),
+        mimeType: file.mimetype,
+        size: file.size,
+        sizeFormatted: formatBytes(file.size),
+        serverless: true,
+        message: 'File received. For best results, analyze directly from your browser using the file picker or paste a URL.',
+      });
+    }
+
+    // Local dev: save to disk and schedule cleanup
     const cleanupId = scheduleCleanup(file.path);
 
     res.json({
       fileId: path.basename(file.path, path.extname(file.path)),
-      filename: file.sanitizedFilename,
+      filename: file.sanitizedFilename || sanitizeFilename(file.originalname),
       originalName: sanitizeFilename(file.originalname),
       mimeType: file.mimetype,
       size: file.size,
