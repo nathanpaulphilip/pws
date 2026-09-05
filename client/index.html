@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freebuff Desktop — AI Media Authenticity Analyzer</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a href="#upload-section" class="skip-link">Skip to main content</a>
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="logo">🔍 Freebuff Desktop</h1>
+      <p class="tagline">AI Media Authenticity Analyzer</p>
+    </div>
+  </header>
+
+  <main class="main" id="main-content">
+    <!-- Upload Section -->
+    <section id="upload-section" class="card upload-card">
+      <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="Upload an image or video for analysis. Supports drag and drop or click to browse.">
+        <div class="drop-zone-content">
+          <div class="drop-icon">📁</div>
+          <p class="drop-text">Drag &amp; drop an image or video here</p>
+          <p class="drop-subtext">or click to browse</p>
+          <p class="drop-formats">JPEG, PNG, WebP, GIF, BMP, TIFF · MP4, WebM, MOV</p>
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,video/mp4,video/webm,video/quicktime" hidden>
+        </div>
+      </div>
+      <div id="url-input-group" class="url-input-group">
+        <label for="url-input" class="visually-hidden">Image URL</label>
+        <input type="url" id="url-input" class="url-input" placeholder="Or paste an image URL..." aria-describedby="url-hint">
+        <span id="url-hint" class="visually-hidden">Enter a public image URL to analyze. Only http and https URLs are accepted.</span>
+        <button id="url-submit" class="btn btn-primary" disabled>Fetch</button>
+      </div>
+    </section>
+
+    <!-- Privacy Notice -->
+    <section class="card privacy-card">
+      <h3>🔒 Privacy-First Analysis</h3>
+      <p>All analysis runs <strong>entirely in your browser</strong>. No image or video data is uploaded to any server.
+         Files are processed locally using Canvas and Web APIs. You can disconnect from the internet and analysis will still work.</p>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading hidden" role="status" aria-live="polite" aria-atomic="true">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="loading-text">Analyzing media...</p>
+      <p class="loading-subtext" id="loading-step">Initializing...</p>
+    </div>
+
+    <!-- Preview -->
+    <section id="preview-section" class="card hidden">
+      <h3>Input Media</h3>
+      <div id="preview-container" class="preview-container"></div>
+      <div id="file-info" class="file-info"></div>
+    </section>
+
+    <!-- Results -->
+    <section id="results-section" class="hidden" aria-label="Analysis results">
+      <!-- Overall Verdict -->
+      <div id="verdict-card" class="card verdict-card">
+        <h3>Analysis Results</h3>
+        <div id="verdict" class="verdict"></div>
+        <div id="confidence-bar-container" class="confidence-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Analysis confidence level">
+          <div id="confidence-bar" class="confidence-bar"></div>
+        </div>
+        <p id="confidence-label" class="confidence-label"></p>
+        <div id="verdict-disclaimer" class="verdict-disclaimer"></div>
+      </div>
+
+      <!-- Evidence Cards -->
+      <div id="evidence-grid" class="evidence-grid"></div>
+
+      <!-- AI Explanation -->
+      <div id="ai-explanation-card" class="card ai-card hidden">
+        <h3>🤖 AI Interpretation</h3>
+        <div id="ai-explanation" class="ai-explanation"></div>
+        <p class="ai-caveat">This interpretation is based solely on the technical evidence extracted above.
+           It is probabilistic and may contain errors. Always verify with additional sources.</p>
+      </div>
+
+      <!-- Technical Details -->
+      <div id="technical-card" class="card hidden">
+        <h3>📊 Technical Details</h3>
+        <pre id="technical-details" class="technical-details"></pre>
+      </div>
+
+      <!-- Limitations -->
+      <div class="card limitations-card">
+        <h3>⚠️ Limitations</h3>
+        <ul class="limitations-list">
+          <li>This tool performs <strong>heuristic analysis</strong>, not definitive authentication.</li>
+          <li>Results are <strong>probabilistic</strong> — false positives and negatives are possible.</li>
+          <li>Low-quality or heavily compressed media reduces analysis accuracy.</li>
+          <li>Sophisticated manipulation may not be detectable by this tool.</li>
+          <li>For high-stakes verification, consult professional forensic tools and domain experts.</li>
+        </ul>
+      </div>
+
+      <!-- Recommended Actions -->
+      <div class="card actions-card">
+        <h3>📋 Recommended Next Steps</h3>
+        <div id="recommended-actions" class="recommended-actions"></div>
+      </div>
+
+      <!-- Reset -->
+      <div class="reset-section">
+        <button id="reset-btn" class="btn btn-secondary">Analyze Another File</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Freebuff Desktop · All processing is client-side · No data leaves your browser</p>
+  </footer>
+
+  <!-- Analysis modules loaded as ES modules -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
