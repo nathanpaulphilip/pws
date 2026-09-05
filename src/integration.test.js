@@ -9,23 +9,23 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert');
 
 describe('Server integration', () => {
-  let app;
+  let server;
   let serverAddr;
 
   before(async () => {
     process.env.PORT = '0';
     delete require.cache[require.resolve('../src/config')];
     delete require.cache[require.resolve('../src/server')];
-    app = require('../src/server');
+    const app = require('../src/server');
+    server = app.listen(0);
     await new Promise((r) => setTimeout(r, 500));
-    serverAddr = app.address();
+    serverAddr = server.address();
   });
 
   after(() => {
     try {
-      if (app && app.close) app.close();
+      if (server && server.close) server.close();
     } catch { /* ignore */ }
-    // Force exit to avoid hanging on cleanup timers
     setTimeout(() => process.exit(0), 1000);
   });
 
